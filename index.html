@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CineStream Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0a0c10;
+      --card-bg: rgba(22, 27, 34, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #ff2a5f;
+      --primary-hover: #e01e4f;
+      --primary-glow: rgba(255, 42, 95, 0.35);
+      --text-main: #f0f6fc;
+      --text-muted: #8b949e;
+      --nav-height: 65px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(121, 40, 202, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(255, 42, 95, 0.1) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-height) + 20px);
+    }
+
+    /* Header Mobile Superior */
+    header {
+      backdrop-filter: blur(16px);
+      background: rgba(10, 12, 16, 0.85);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff2a5f 0%, #7928ca 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Navbar estilo aplicativo no rodapé (Bottom Nav) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-height);
+      background: rgba(10, 12, 16, 0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      width: 50%;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .nav-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-btn.active {
+      color: var(--primary);
+    }
+
+    .nav-btn.active svg {
+      transform: translateY(-2px);
+    }
+
+    /* Main Container */
+    main {
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .tab-content, .view {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .tab-content.active, .view.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    /* Grid layout adaptado para Mobile */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Aspect Ratios Diferenciados */
+    .thumb-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .thumb-wrapper.normal {
+      padding-top: 56.25%; /* 16:9 Horizontal */
+    }
+
+    .thumb-wrapper.short {
+      padding-top: 150%; /* 9:16 Vertical */
+    }
+
+    .thumb-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .format-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .format-badge.short-badge {
+      background: rgba(255, 42, 95, 0.85);
+      border-color: transparent;
+    }
+
+    .card-info {
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .delete-btn:hover {
+      color: #ff4d4d;
+    }
+
+    /* Player View */
+    .back-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .video-wrapper {
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .video-wrapper.normal video {
+      width: 100%;
+      max-height: 60vh;
+    }
+
+    .video-wrapper.short video {
+      width: 100%;
+      max-width: 320px;
+      height: 70vh;
+      object-fit: cover;
+    }
+
+    .player-details {
+      margin-top: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .player-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    /* Seletor de Formato de Vídeo */
+    .format-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .format-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .format-card input[type="radio"] {
+      display: none;
+    }
+
+    .format-card svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .format-card span {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .format-card.selected {
+      border-color: var(--primary);
+      background: rgba(255, 42, 95, 0.08);
+    }
+
+    .format-card.selected svg, .format-card.selected span {
+      fill: var(--primary);
+      color: #fff;
+    }
+
+    /* Form UI */
+    .upload-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    textarea {
+      resize: none;
+      height: 70px;
+    }
+
+    .file-dropzone {
+      border: 2px dashed var(--card-border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .file-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Botões */
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px var(--primary-glow);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 10px;
+      color: var(--text-muted);
+    }
+
+    .loading-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 12, 16, 0.9);
+      backdrop-filter: blur(5px);
+      z-index: 10;
+      border-radius: 16px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
+      </svg>
+      CineStream
+    </div>
+  </header>
+
+  <main>
+    <!-- Aba 1: Feed / Player -->
+    <div id="tab-feed" class="tab-content active">
+      <div id="view-grid" class="view active">
+        <div class="section-title">Biblioteca de Vídeos</div>
+        <div id="video-list" class="video-grid"></div>
+      </div>
+
+      <!-- Player -->
+      <div id="view-player" class="view">
+        <button class="back-btn" onclick="closePlayer()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Voltar
+        </button>
+        
+        <div id="player-wrapper" class="video-wrapper">
+          <video id="main-player" controls autoplay playsinline></video>
+        </div>
+
+        <div class="player-details">
+          <h1 id="player-title" style="font-size: 18px; font-weight: 600;"></h1>
+          <p id="player-desc" style="color: var(--text-muted); margin-top: 6px; font-size: 13px;"></p>
+          
+          <div class="player-actions">
+            <a id="download-btn" class="btn-primary" download style="flex: 1;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              Baixar
+            </a>
+            <button class="btn-secondary" onclick="togglePiP()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-8v6h8v-6zm4-7E2.01 2 2 2.9 2 4v12c0 1.1.9 2 2 2h4v2h6v-2h8c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v14z"/></svg>
+              PiP
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aba 2: Upload -->
+    <div id="tab-upload" class="tab-content">
+      <div class="upload-box">
+        <div class="loading-overlay" id="upload-loading">
+          <div class="spinner"></div>
+          <span style="font-size: 13px;">Processando vídeo...</span>
+        </div>
+
+        <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Postar Vídeo</h2>
+        
+        <form id="upload-form">
+          <!-- Seleção de Formato -->
+          <label>Formato do Vídeo</label>
+          <div class="format-selector">
+            <div class="format-card selected" onclick="selectFormat('normal', this)">
+              <input type="radio" name="format" value="normal" checked />
+              <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/></svg>
+              <span>Normal (16:9)</span>
+            </div>
+            
+            <div class="format-card" onclick="selectFormat('short', this)">
+              <input type="radio" name="format" value="short" />
+              <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+              <span>Shorts / TikTok</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="input-title" placeholder="Digite o título..." required />
+          </div>
+
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="input-desc" placeholder="Adicione uma breve descrição..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Arquivo</label>
+            <div class="file-dropzone">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--text-muted)"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+              <div id="file-label" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Escolher arquivo de vídeo</div>
+              <input type="file" id="input-video" accept="video/*" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top: 10px;">
+            Publicar
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Navegação Inferior (Bottom Nav) -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('tab-feed', this)">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Início
+    </button>
+    <button class="nav-btn" onclick="switchTab('tab-upload', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      Postar
+    </button>
+  </nav>
+
+  <script>
+    // --- IndexedDB ---
+    let db;
+    const dbReq = indexedDB.open("CineStreamMobileDB", 1);
+
+    dbReq.onupgradeneeded = (e) => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains("videos")) {
+        db.createObjectStore("videos", { keyPath: "id", autoIncrement: true });
+      }
+    };
+
+    dbReq.onsuccess = (e) => {
+      db = e.target.result;
+      loadVideos();
+    };
+
+    // --- Navegação Mobile ---
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        document.querySelectorAll('.nav-btn')[tabId === 'tab-feed' ? 0 : 1].classList.add('active');
+      }
+
+      if (tabId === 'tab-feed') closePlayer();
+    }
+
+    // --- Seletor de Formato de Vídeo ---
+    let selectedVideoFormat = 'normal';
+
+    function selectFormat(format, el) {
+      selectedVideoFormat = format;
+      document.querySelectorAll('.format-card').forEach(card => card.classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input').checked = true;
+    }
+
+    // --- Input de Arquivo ---
+    const fileInput = document.getElementById('input-video');
+    const fileLabel = document.getElementById('file-label');
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        fileLabel.innerText = e.target.files[0].name;
+        fileLabel.style.color = 'var(--primary)';
+      }
+    });
+
+    // --- Processamento de Upload ---
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const loading = document.getElementById('upload-loading');
+      loading.style.display = 'flex';
+
+      const title = document.getElementById('input-title').value;
+      const desc = document.getElementById('input-desc').value;
+      const fileFile = fileInput.files[0];
+
+      if (!fileFile) return;
+
+      try {
+        const thumbBlob = await generateThumbnail(fileFile);
+
+        const videoData = {
+          title,
+          desc,
+          format: selectedVideoFormat,
+          videoBlob: fileFile,
+          thumbBlob,
+          dateStr: new Date().toLocaleDateString('pt-BR')
+        };
+
+        const tx = db.transaction("videos", "readwrite");
+        const store = tx.objectStore("videos");
+        store.add(videoData);
+
+        tx.oncomplete = () => {
+          loading.style.display = 'none';
+          document.getElementById('upload-form').reset();
+          fileLabel.innerText = "Escolher arquivo de vídeo";
+          fileLabel.style.color = "var(--text-muted)";
+          selectFormat('normal', document.querySelectorAll('.format-card')[0]);
+          
+          switchTab('tab-feed');
+          loadVideos();
+        };
+      } catch (err) {
+        alert("Erro ao carregar o vídeo.");
+        loading.style.display = 'none';
+      }
+    });
+
+    function generateThumbnail(file) {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.currentTime = 0.5;
+        video.muted = true;
+        
+        video.onloadeddata = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 480;
+          canvas.height = 270;
+          const ctx = canvas.getContext('2d');
+          
+          video.play().then(() => {
+            video.pause();
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              URL.revokeObjectURL(video.src);
+              resolve(blob);
+            }, 'image/jpeg', 0.8);
+          }).catch(reject);
+        };
+        video.onerror = reject;
+      });
+    }
+
+    // --- Renderização de Vídeos ---
+    function loadVideos() {
+      const list = document.getElementById('video-list');
+      list.innerHTML = '';
+
+      const tx = db.transaction("videos", "readonly");
+      const store = tx.objectStore("videos");
+      const req = store.getAll();
+
+      req.onsuccess = () => {
+        const videos = req.result;
+
+        if (videos.length === 0) {
+          list.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <p>Nenhum vídeo salvo.</p>
+            </div>
+          `;
+          return;
+        }
+
+        videos.forEach(item => {
+          const thumbUrl = URL.createObjectURL(item.thumbBlob);
+          const isShort = item.format === 'short';
+          
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="thumb-wrapper ${isShort ? 'short' : 'normal'}">
+              <img src="${thumbUrl}" class="thumb-img" />
+              <div class="format-badge ${isShort ? 'short-badge' : ''}">
+                ${isShort ? 'Shorts' : 'Vídeo'}
+              </div>
+            </div>
+            <div class="card-info">
+              <div class="card-title">${escapeHtml(item.title)}</div>
+              <div class="card-footer">
+                <span>${item.dateStr || ''}</span>
+                <button class="delete-btn" title="Excluir">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+              </div>
+            </div>
+          `;
+
+          card.querySelector('.thumb-wrapper').onclick = () => openPlayer(item);
+          card.querySelector('.card-title').onclick = () => openPlayer(item);
+          
+          card.querySelector('.delete-btn').onclick = (e) => {
+            e.stopPropagation();
+            deleteVideo(item.id);
+          };
+
+          list.appendChild(card);
+        });
+      };
+    }
+
+    // --- Excluir Vídeo ---
+    function deleteVideo(id) {
+      if (confirm("Deseja apagar este vídeo?")) {
+        const tx = db.transaction("videos", "readwrite");
+        tx.objectStore("videos").delete(id);
+        tx.oncomplete = () => loadVideos();
+      }
+    }
+
+    // --- Player e PiP ---
+    let activeVideoUrl = null;
+
+    function openPlayer(item) {
+      const gridView = document.getElementById('view-grid');
+      const playerView = document.getElementById('view-player');
+      const wrapper = document.getElementById('player-wrapper');
+
+      // Aplica o estilo proporcional no player de acordo com o formato
+      wrapper.className = `video-wrapper ${item.format === 'short' ? 'short' : 'normal'}`;
+
+      gridView.classList.remove('active');
+      setTimeout(() => {
+        gridView.style.display = 'none';
+        playerView.style.display = 'block';
+        setTimeout(() => playerView.classList.add('active'), 20);
+      }, 200);
+
+      const player = document.getElementById('main-player');
+      
+      if (activeVideoUrl) URL.revokeObjectURL(activeVideoUrl);
+      activeVideoUrl = URL.createObjectURL(item.videoBlob);
+      
+      player.src = activeVideoUrl;
+      
+      document.getElementById('player-title').innerText = item.title;
+      document.getElementById('player-desc').innerText = item.desc;
+      
+      const downloadBtn = document.getElementById('download-btn');
+      downloadBtn.href = activeVideoUrl;
+      downloadBtn.download = `${item.title}.mp4`;
+    }
+
+    function closePlayer() {
+      const player = document.getElementById('main-player');
+      player.pause();
+      player.src = '';
+
+      const gridView = document.getElementById('view-grid');
+      const playerView = document.getElementById('view-player');
+
+      playerView.classList.remove('active');
+      setTimeout(() => {
+        playerView.style.display = 'none';
+        gridView.style.display = 'block';
+        setTimeout(() => gridView.classList.add('active'), 20);
+      }, 200);
+    }
+
+    async function togglePiP() {
+      const player = document.getElementById('main-player');
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else if (document.pictureInPictureEnabled) {
+          await player.requestPictureInPicture();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
